@@ -1,0 +1,11 @@
+# Carpeta de evidencias de la Práctica 1 (Semana 1)
+# Estudiante N.º 35 · Recibo Claro
+#
+# Archivos de captura requeridos:
+# - E0-inicial.png (P0: primera versión corriendo)
+# - E1-antes.png / E1-despues.png (M1: función de comparación de escenarios)
+# - E2-antes.png / E2-despues.png (M2: datos persistentes tras recargar)
+# - E3-celular.png / E3-vacio.png (M3: vista en celular real y estado vacío)
+# - E4-error.png (M4: validación de error bien mostrada)
+# - E5-json.png / E5-app.png / E5-falla.png (M5: JSON estructurado, pantalla y prueba de fallo)
+# - qr.png (Código QR para apertura en teléfonos)

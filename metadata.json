@@ -1,0 +1,6 @@
+{
+  "name": "Recibo Claro",
+  "description": "Calculadora y optimizador de consumo eléctrico del hogar. Descubre qué aparatos suben tu factura, compara escenarios y obtén recomendaciones de ahorro con IA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
