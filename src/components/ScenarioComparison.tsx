@@ -159,6 +159,56 @@ export const ScenarioComparison: React.FC<ScenarioComparisonProps> = ({
         </div>
       </div>
 
+      {/* Category Savings Breakdown Table */}
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+        <h3 className="text-xs font-mono uppercase text-slate-300 tracking-wider mb-3 flex items-center justify-between">
+          <span>Comparativa de Consumo por Categoría (A vs B)</span>
+          <span className="text-[11px] text-emerald-400 font-bold">Diferencia de Gasto</span>
+        </h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+          {summaryA.categoryTotals.map((catA) => {
+            const catB = summaryB.categoryTotals.find((c) => c.category === catA.category) || {
+              kwh: 0,
+              cost: 0,
+            };
+            const catDiffCost = catB.cost - catA.cost;
+            const catDiffKwh = catB.kwh - catA.kwh;
+
+            return (
+              <div
+                key={catA.category}
+                className="p-3 rounded-lg bg-slate-950/80 border border-slate-800 flex items-center justify-between text-xs"
+              >
+                <div>
+                  <span className="font-semibold text-slate-200 capitalize block">
+                    {catA.category}
+                  </span>
+                  <span className="font-mono text-[11px] text-slate-400">
+                    {catA.kwh} ➔ {catB.kwh} kWh
+                  </span>
+                </div>
+
+                <div className="text-right">
+                  <span
+                    className={`font-mono font-bold block ${
+                      catDiffCost <= 0 ? 'text-emerald-400' : 'text-rose-400'
+                    }`}
+                  >
+                    {catDiffCost <= 0
+                      ? `-$${Math.abs(catDiffCost).toFixed(2)}`
+                      : `+$${catDiffCost.toFixed(2)}`}
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-mono">
+                    {catDiffKwh <= 0 ? `${catDiffKwh.toFixed(1)} kWh` : `+${catDiffKwh.toFixed(1)} kWh`}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Side-by-side Visual Comparison Bars */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
         <h3 className="text-xs font-mono uppercase text-slate-300 tracking-wider mb-4">
