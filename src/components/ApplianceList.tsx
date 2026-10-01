@@ -52,31 +52,47 @@ export const ApplianceList: React.FC<ApplianceListProps> = ({
   // Empty State (Peldaño M3: Que se entienda)
   if (summary.calculatedAppliances.length === 0) {
     return (
-      <div className="bg-slate-900/60 border border-dashed border-slate-700 rounded-2xl p-8 sm:p-12 text-center my-6 max-w-xl mx-auto">
-        <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center mx-auto mb-4">
-          <Zap className="w-8 h-8 animate-pulse" />
+      <div className="bg-slate-900/80 border border-dashed border-slate-700 rounded-3xl p-6 sm:p-12 text-center my-6 max-w-xl mx-auto shadow-2xl">
+        <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-cyan-500/10">
+          <Zap className="w-8 h-8 animate-pulse text-cyan-400" />
         </div>
-        <h3 className="text-xl font-bold text-white mb-2">
+        <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
           Tu inventario eléctrico está vacío
         </h3>
-        <p className="text-sm text-slate-400 mb-6 leading-relaxed">
-          Comienza registrando los electrodomésticos de tu hogar con sus vatios y horas de uso para calcular tu recibo exacto, o carga un hogar de ejemplo con un solo toque.
+        <p className="text-xs sm:text-sm text-slate-400 mb-6 leading-relaxed max-w-md mx-auto">
+          Descubre qué electrodoméstico está inflando tu recibo de luz. Comienza agregando tu primer aparato o carga una casa típica con un solo toque.
         </p>
+
+        {/* 3 Onboarding Steps for M3 clarity */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-left mb-6 max-w-md mx-auto">
+          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+            <span className="font-mono text-cyan-400 font-bold block mb-1">Paso 1</span>
+            <span className="text-slate-300 font-medium">Registra o elige aparatos con sus Watts típicos.</span>
+          </div>
+          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+            <span className="font-mono text-amber-400 font-bold block mb-1">Paso 2</span>
+            <span className="text-slate-300 font-medium">Ve en tiempo real cuánto dinero gastas al mes.</span>
+          </div>
+          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+            <span className="font-mono text-pink-400 font-bold block mb-1">Paso 3</span>
+            <span className="text-slate-300 font-medium">La IA identifica tus 3 mayores vampiros de energía.</span>
+          </div>
+        </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
             onClick={onAddClick}
             type="button"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm shadow-lg shadow-cyan-500/25 transition-all cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm shadow-xl shadow-cyan-500/25 transition-all active:scale-95 cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-5 h-5" />
             <span>Registrar Primer Aparato</span>
           </button>
 
           <button
             onClick={onLoadSample}
             type="button"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-sm transition-all cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-sm transition-all active:scale-95 cursor-pointer"
           >
             <Sparkles className="w-4 h-4 text-amber-400" />
             <span>Cargar Hogar de 4 Personas</span>
@@ -339,6 +355,17 @@ export const ApplianceList: React.FC<ApplianceListProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Floating Action Button (FAB) for Mobile One-Handed Use (Peldaño M3) */}
+      <button
+        onClick={onAddClick}
+        type="button"
+        className="sm:hidden fixed bottom-6 right-6 z-30 w-14 h-14 rounded-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 flex items-center justify-center shadow-2xl shadow-cyan-400/50 active:scale-90 transition-all cursor-pointer border-2 border-slate-900"
+        title="Añadir aparato con una sola mano"
+        aria-label="Añadir aparato"
+      >
+        <Plus className="w-7 h-7 stroke-[2.5]" />
+      </button>
     </div>
   );
 };
