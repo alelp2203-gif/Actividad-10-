@@ -52,6 +52,72 @@ export const ApplianceFormModal: React.FC<ApplianceFormModalProps> = ({
 
   if (!isOpen) return null;
 
+  // Input sanitization handlers (Peldaño M4: Validación estricta en tiempo real)
+  const handleNameChange = (val: string) => {
+    // Sanitizar texto: remover caracteres de control
+    const sanitized = val.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
+    setName(sanitized);
+    if (!sanitized.trim()) {
+      setErrors((prev) => ({ ...prev, name: 'El nombre del aparato no puede quedar vacío.' }));
+    } else {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.name;
+        return next;
+      });
+    }
+  };
+
+  const handleWattsChange = (val: string) => {
+    const num = parseFloat(val);
+    if (isNaN(num)) {
+      setWatts(0);
+      setErrors((prev) => ({ ...prev, watts: 'Ingresa un número válido de Watts.' }));
+      return;
+    }
+    if (num <= 0) {
+      setWatts(0);
+      setErrors((prev) => ({ ...prev, watts: 'La potencia debe ser mayor a 0 Watts (no números negativos ni cero).' }));
+      return;
+    }
+    if (num > 25000) {
+      setWatts(25000);
+      setErrors((prev) => ({ ...prev, watts: 'Tope máximo: 25,000W para aparatos residenciales.' }));
+      return;
+    }
+    setWatts(num);
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.watts;
+      return next;
+    });
+  };
+
+  const handleHoursChange = (val: string) => {
+    const num = parseFloat(val);
+    if (isNaN(num)) {
+      setHoursPerDay(0);
+      setErrors((prev) => ({ ...prev, hoursPerDay: 'Ingresa las horas de uso diario.' }));
+      return;
+    }
+    if (num <= 0) {
+      setHoursPerDay(0);
+      setErrors((prev) => ({ ...prev, hoursPerDay: 'El tiempo de uso debe ser mayor a 0 horas.' }));
+      return;
+    }
+    if (num > 24) {
+      setHoursPerDay(24);
+      setErrors((prev) => ({ ...prev, hoursPerDay: 'Límite físico: un día tiene un máximo de 24 horas.' }));
+      return;
+    }
+    setHoursPerDay(Math.round(num * 100) / 100);
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.hoursPerDay;
+      return next;
+    });
+  };
+
   // Validation function (Peldaño M4: Que no se rompa)
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
@@ -147,17 +213,14 @@ export const ApplianceFormModal: React.FC<ApplianceFormModalProps> = ({
               maxLength={60}
               placeholder="Ej. Refrigerador de la cocina, Smart TV sala, etc."
               value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (errors.name) setErrors({ ...errors, name: '' });
-              }}
+              onChange={(e) => handleNameChange(e.target.value)}
               className={`w-full bg-slate-950 border ${
                 errors.name ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-700'
               } rounded-lg px-3 py-2 text-white placeholder-slate-500 text-sm focus:border-cyan-500 focus:outline-none`}
             />
             {errors.name && (
-              <p className="text-xs text-rose-400 mt-1 flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5" />
+              <p className="text-xs text-rose-400 mt-1 flex items-center gap-1 font-mono">
+                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
                 {errors.name}
               </p>
             )}
@@ -201,10 +264,7 @@ export const ApplianceFormModal: React.FC<ApplianceFormModalProps> = ({
                   min="1"
                   max="25000"
                   value={watts || ''}
-                  onChange={(e) => {
-                    setWatts(parseFloat(e.target.value) || 0);
-                    if (errors.watts) setErrors({ ...errors, watts: '' });
-                  }}
+                  onChange={(e) => handleWattsChange(e.target.value)}
                   className={`w-full bg-slate-950 border ${
                     errors.watts ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-700'
                   } rounded-lg px-3 py-2 text-white font-mono text-sm focus:border-cyan-500 focus:outline-none`}
@@ -212,7 +272,7 @@ export const ApplianceFormModal: React.FC<ApplianceFormModalProps> = ({
                 <span className="absolute right-3 top-2.5 text-xs text-slate-500 font-mono">W</span>
               </div>
               {errors.watts && (
-                <p className="text-[11px] text-rose-400 mt-1">{errors.watts}</p>
+                <p className="text-[11px] text-rose-400 mt-1 font-mono">{errors.watts}</p>
               )}
             </div>
 
@@ -226,7 +286,7 @@ export const ApplianceFormModal: React.FC<ApplianceFormModalProps> = ({
                 min="1"
                 max="100"
                 value={quantity || ''}
-                onChange={(e) => setQuantity(parseInt(e.target.value, 10) || 1)}
+                onChange={(e) => setQuantity(Math.max(1, Math.min(100, parseInt(e.target.value, 10) || 1)))}
                 className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono text-sm focus:border-cyan-500 focus:outline-none"
               />
             </div>
@@ -247,10 +307,7 @@ export const ApplianceFormModal: React.FC<ApplianceFormModalProps> = ({
               min="0.01"
               max="24"
               value={hoursPerDay || ''}
-              onChange={(e) => {
-                setHoursPerDay(parseFloat(e.target.value) || 0);
-                if (errors.hoursPerDay) setErrors({ ...errors, hoursPerDay: '' });
-              }}
+              onChange={(e) => handleHoursChange(e.target.value)}
               className={`w-full bg-slate-950 border ${
                 errors.hoursPerDay ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-700'
               } rounded-lg px-3 py-2 text-white font-mono text-sm focus:border-cyan-500 focus:outline-none`}
@@ -347,11 +404,11 @@ export const ApplianceFormModal: React.FC<ApplianceFormModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm shadow-lg shadow-cyan-500/25 transition-all disabled:opacity-50"
+              disabled={isSubmitting || !name.trim() || watts <= 0 || hoursPerDay <= 0 || hoursPerDay > 24 || Object.keys(errors).length > 0}
+              className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm shadow-lg shadow-cyan-500/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
               <Check className="w-4 h-4" />
-              {editingAppliance ? 'Guardar Cambios' : 'Agregar Aparato'}
+              {isSubmitting ? 'Guardando...' : editingAppliance ? 'Guardar Cambios' : 'Agregar Aparato'}
             </button>
           </div>
         </form>
