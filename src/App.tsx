@@ -15,7 +15,8 @@ import {
   calculateHouseholdSummary, 
   loadStoredState, 
   saveStoredState, 
-  exportDataToJson 
+  exportDataToJson,
+  parseJsonBackup
 } from './utils/calculator';
 import { 
   SAMPLE_HOUSEHOLD_APPLIANCES, 
@@ -158,6 +159,24 @@ export default function App() {
     showToast('Copia de respaldo JSON descargada a tu equipo.');
   };
 
+  const handleImportJson = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      if (!content) return;
+      const parsed = parseJsonBackup(content);
+      if (parsed) {
+        setAppliancesA(parsed.appliancesA);
+        setAppliancesB(parsed.appliancesB);
+        setSettings(parsed.tariffSettings);
+        showToast(`Respaldo importado: ${parsed.appliancesA.length} aparatos cargados.`);
+      } else {
+        showToast('Error: El archivo no tiene el formato de respaldo de Recibo Claro.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const handleCloneAToB = () => {
     setAppliancesB(JSON.parse(JSON.stringify(appliancesA)));
     showToast('Escenario A clonado al Escenario B para simular cambios.');
@@ -193,6 +212,7 @@ export default function App() {
         onOpenSettings={() => setIsTariffModalOpen(true)}
         onLoadSample={handleLoadSampleHousehold}
         onExport={handleExport}
+        onImport={handleImportJson}
         onReset={handleReset}
         hasAppliances={appliancesA.length > 0}
       />

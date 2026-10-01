@@ -129,3 +129,26 @@ export function exportDataToJson(state: StoredState): void {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+export function parseJsonBackup(jsonString: string): StoredState | null {
+  try {
+    const parsed = JSON.parse(jsonString);
+    if (!parsed || typeof parsed !== 'object') return null;
+    if (!Array.isArray(parsed.appliancesA)) return null;
+    return {
+      appliancesA: parsed.appliancesA,
+      appliancesB: Array.isArray(parsed.appliancesB) ? parsed.appliancesB : [],
+      tariffSettings: parsed.tariffSettings || {
+        pricePerKwh: 0.185,
+        fixedCharge: 1.25,
+        billingDays: 30,
+        currency: '$',
+        countryOrProvider: 'Residencial',
+      },
+      activeTab: parsed.activeTab || 'inventory',
+    };
+  } catch (err) {
+    console.error('Error al analizar archivo JSON de respaldo:', err);
+    return null;
+  }
+}

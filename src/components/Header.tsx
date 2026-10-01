@@ -7,6 +7,7 @@ import {
   Settings2, 
   Sparkles, 
   Download, 
+  Upload,
   RotateCcw,
   CheckCircle2,
   AlertTriangle
@@ -22,6 +23,7 @@ interface HeaderProps {
   onOpenSettings: () => void;
   onLoadSample: () => void;
   onExport: () => void;
+  onImport: (file: File) => void;
   onReset: () => void;
   hasAppliances: boolean;
 }
@@ -34,9 +36,19 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSettings,
   onLoadSample,
   onExport,
+  onImport,
   onReset,
   hasAppliances,
 }) => {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onImport(file);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
   return (
     <header className="border-b border-slate-800 bg-slate-900/95 sticky top-0 z-40 backdrop-blur">
       {/* Top Banner / Info */}
@@ -59,6 +71,24 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span>Cargar Hogar Ejemplo</span>
+          </button>
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept=".json,application/json"
+            className="hidden"
+          />
+
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            type="button"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors text-xs font-medium cursor-pointer"
+            title="Importar un archivo de respaldo JSON a tu app"
+          >
+            <Upload className="w-3.5 h-3.5 text-purple-400" />
+            <span className="hidden md:inline">Importar JSON</span>
           </button>
 
           <button
