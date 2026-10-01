@@ -51,6 +51,7 @@ export const AiDiagnosisView: React.FC<AiDiagnosisViewProps> = ({
       const response = await fetch('/api/analyze-receipt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(5000),
         body: JSON.stringify({
           appliances: summary.calculatedAppliances,
           tariff: settings.pricePerKwh,
@@ -73,9 +74,48 @@ export const AiDiagnosisView: React.FC<AiDiagnosisViewProps> = ({
         throw new Error(resData.error || 'Respuesta inválida del servidor');
       }
     } catch (err: any) {
-      console.error('Error al solicitar diagnóstico:', err);
+      console.warn('Plan de contingencia activado por timeout o fallo de red:', err);
+      // Motor de contingencia local inmediato en cliente (Garantía de respuesta en <5000ms sin pantalla rota)
+      const sorted = [...summary.calculatedAppliances].sort((a, b) => b.monthlyKwh - a.monthlyKwh);
+      const top3 = sorted.slice(0, 3);
+      const vampires = top3.map((app, idx) => {
+        const pct = summary.totalMonthlyKwh > 0 ? (app.monthlyKwh / summary.totalMonthlyKwh) * 100 : 0;
+        return {
+          rank: idx + 1,
+          name: app.name,
+          monthlyKwh: Math.round(app.monthlyKwh * 10) / 10,
+          monthlyCost: Math.round(app.monthlyCost * 100) / 100,
+          percentageOfTotal: Math.round(pct * 10) / 10,
+          reason: `Aparato de alta demanda continua (${app.watts}W por ${app.hoursPerDay}h/día).`,
+          concreteProposal: 'Reducir el tiempo de uso diario en un 25% o desconectar completamente para evitar standby.',
+          estimatedKwhSavings: Math.round(app.monthlyKwh * 0.25 * 10) / 10,
+          estimatedDollarSavings: Math.round(app.monthlyCost * 0.25 * 100) / 100,
+        };
+      });
+
+      const totalSavedKwh = vampires.reduce((acc, v) => acc + v.estimatedKwhSavings, 0);
+      const totalSavedCost = vampires.reduce((acc, v) => acc + v.estimatedDollarSavings, 0);
+
+      const localResult: AiAnalysisResult = {
+        summary: `Plan de contingencia activado: Se detectaron ${vampires.length} aparatos prioritarios que concentran el mayor consumo del hogar. Con ajustes moderados se proyecta un ahorro estimado de $${totalSavedCost.toFixed(2)} mensuales.`,
+        monthlyTotalKwh: summary.totalMonthlyKwh,
+        monthlyTotalCost: summary.totalMonthlyCost,
+        vampireAppliances: vampires,
+        overallTips: [
+          'Evita mantener equipos en reposo (consumo fantasma puede representar hasta 10% del recibo).',
+          'Aprovecha la ventilación cruzada y luz natural en las horas de menor radiación.',
+          'Revisa el sellado de puertas de refrigeración y aísla fuentes térmicas.',
+        ],
+        potentialMonthlySavingsKwh: Math.round(totalSavedKwh * 10) / 10,
+        potentialMonthlySavingsDollars: Math.round(totalSavedCost * 100) / 100,
+        isFallback: true,
+      };
+
+      setAnalysisResult(localResult);
+      setSourceInfo('Plan de Contingencia Local (Activado por timeout >5s o sin conexión)');
+      setRawJsonResponse(JSON.stringify(localResult, null, 2));
       setErrorMsg(
-        `Error al contactar con la API de IA: ${err.message}. Se activará el motor de contingencia local.`
+        'Aviso: La respuesta de la API de IA demoró más de 5 segundos o no hubo conexión. El diagnóstico se calculó al instante con el motor matemático de respaldo.'
       );
     } finally {
       setLoading(false);

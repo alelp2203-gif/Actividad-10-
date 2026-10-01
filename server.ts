@@ -228,20 +228,29 @@ Instrucciones precisas:
       },
     };
 
-    let response;
+    let response: any;
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Tiempo de espera agotado (>4.5s)')), 4500)
+    );
+
     try {
-      response = await ai.models.generateContent({
+      const generatePromise = ai.models.generateContent({
         model: 'gemini-3.8-flash',
         contents: prompt,
         config: schemaConfig,
       });
-    } catch (primaryErr) {
+      response = await Promise.race([generatePromise, timeoutPromise]);
+    } catch (primaryErr: any) {
+      if (primaryErr?.message?.includes('Tiempo de espera')) {
+        throw primaryErr;
+      }
       console.warn('Modelo gemini-3.8-flash ocupado, intentando con gemini-flash-latest...');
-      response = await ai.models.generateContent({
+      const fallbackModelPromise = ai.models.generateContent({
         model: 'gemini-flash-latest',
         contents: prompt,
         config: schemaConfig,
       });
+      response = await Promise.race([fallbackModelPromise, timeoutPromise]);
     }
 
     const textOutput = response.text;
